@@ -61,7 +61,7 @@ print(my_RowList)
 #Veritabanına yazdırma işlemi gerçekleştirilir.
 import cx_Oracle
 dsn_tns = cx_Oracle.makedsn('IDB-10256.roketsan.com.tr', '1521', service_name='XE')
-conn = cx_Oracle.connect(user='HR', password='HR', dsn=dsn_tns)
+conn = cx_Oracle.connect(user=input(), password=input(), dsn=dsn_tns)
 
 import sys
 sys.getdefaultencoding()
