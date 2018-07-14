@@ -13,7 +13,7 @@ import spotipy.util as util
 
 #1. Authentication Part
 cid =input()       #your client_id
-secret = "input()  #your app secret
+secret = input()  #your app secret
 username = input() #your spotify username
 client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret) 
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
