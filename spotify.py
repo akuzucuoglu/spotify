@@ -12,9 +12,9 @@ import spotipy.util as util
 
 
 #1. Authentication Part
-cid ="728597db852d430b8dc789cd1e709fdc" 
-secret = "bf643e8ed0ed4803b3a251ed651eb9fb"
-username = "11155653769"
+cid =input()       #your client_id
+secret = "input()  #your app secret
+username = input() #your spotify username
 client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret) 
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 #scope = 'user-library-read playlist-read-private'
@@ -30,7 +30,7 @@ token = util.prompt_for_user_token(username, scope,cid,secret,redirect_uri='http
 #2. Inputting the model
 
     #Bossa Nueba Playlist'i üzerinden gideceğiz
-fine_playlist = sp.user_playlist("11155653769", "2SjiZrFhqsDtgimUCcCkWB")
+fine_playlist = sp.user_playlist(<user_name>, <playlist_id>)
 fine_tracks = fine_playlist["tracks"]
 fine_songs = fine_tracks["items"]
 
