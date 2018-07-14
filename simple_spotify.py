@@ -11,9 +11,9 @@ import spotipy.util as util
 
 
 #1. Authentication Part
-cid ="728597db852d430b8dc789cd1e709fdc" 
-secret = "bf643e8ed0ed4803b3a251ed651eb9fb"
-username = "11155653769"
+cid =<cid>
+secret = <secret>
+username = <username>
 client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret) 
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 #scope = 'user-library-read playlist-read-private'
