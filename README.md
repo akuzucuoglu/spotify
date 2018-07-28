@@ -1,2 +1,2 @@
 # spotify
-Holds the source codes for my side projects. Projects split when they grow.
+Holds the source codes for my side project.
