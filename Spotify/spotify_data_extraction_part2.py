@@ -13,6 +13,7 @@ import spotipy.util as util
 import requests
 
 import pandas as pd
+import IPython.display as ipd
 import librosa
 import librosa.display
 import glob 
@@ -55,7 +56,7 @@ def download_file(url,filename):
     return local_filename
 
 
-
+#Getting the previews for the songs liked
 os.chdir('C:\\Users\\Ahmet\\Desktop\\machine learning\\Convolutional_Neural_Networks\\audio_dataset\\liked')
 for v_offset in range(0,v_length+20,20):
     print(v_offset)
@@ -86,16 +87,12 @@ for v_dlTrack in myDislikePl["tracks"]["items"]:
             download_file(v_dlTrack['track']['preview_url'],v_dlTrack['track']['name'])
             
             
-import IPython.display as ipd
-ipd.Audio('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/YazGazeteciYaz.wav')
+#librosa audio object
+ipd.Audio('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/24HoursIstanbul.wav')
 
-import librosa
+#getting the spectogram out of librosa audio file 
+data, sampling_rate = librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/24HoursIstanbul.wav')
 
-data, sampling_rate = librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/YazGazeteciYaz.wav')
-
-
-
-plt.figure(figsize=(12, 4))
+#drawing the spectogram
+plt.figure(figsize=(20, 4))
 librosa.display.waveplot(data, sr=sampling_rate)
-
-data
