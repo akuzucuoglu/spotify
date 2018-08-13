@@ -107,3 +107,6 @@ venv.bak/
 *.png
 *.jpg
 *.jpeg
+
+#Specifics
+sptfy_app.txt
