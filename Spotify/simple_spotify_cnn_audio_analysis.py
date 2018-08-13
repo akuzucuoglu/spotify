@@ -69,8 +69,8 @@ for v_offset in range(0,v_length+20,20):
             None
         else:
             songNum=songNum+1
-            SavedSongURLs.append(song['track']['preview_url'])
-            download_file(song['track']['preview_url'],'song'+(str(songNum)))
+            #SavedSongURLs.append(song['track']['preview_url'])
+            #download_file(song['track']['preview_url'],'song'+(str(songNum)))
             audio_data.append(librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked2/song'+str(songNum)+'.wav'))
 
 
@@ -87,8 +87,8 @@ for v_dlTrack in myDislikePl["tracks"]["items"]:
             None
     else:
             songNum=songNum+1
-            DislikedSongsURLs.append(v_dlTrack["track"]["preview_url"])
-            download_file(v_dlTrack['track']['preview_url'],'song'+(str(songNum)))
+            #DislikedSongsURLs.append(v_dlTrack["track"]["preview_url"])
+            #download_file(v_dlTrack['track']['preview_url'],'song'+(str(songNum)))
             audio_data.append(librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/disliked2/song'+str(songNum)+'.wav'))
 
 
@@ -105,3 +105,62 @@ data, sampling_rate = librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Con
 #drawing the spectogram
 plt.figure(figsize=(20, 4))
 librosa.display.waveplot(data, sr=sampling_rate)
+
+# Part 1 - Building the CNN
+
+# Importing the Keras libraries and packages
+from keras.models import Sequential
+from keras.layers import Convolution2D
+from keras.layers import MaxPooling2D
+from keras.layers import Flatten
+from keras.layers import Dense
+from keras.layers import Activation
+from keras.layers import Dropout
+
+import numpy as np
+
+mfccs = np.mean(librosa.feature.mfcc(y=audio_data[0][0], sr=audio_data[0][1], n_mfcc=40).T,axis=0)
+
+#Building process
+classifier = Sequential()
+
+classifier.add(Dense(256, input_shape=(40,)))
+classifier.add(Activation('relu'))
+classifier.add(Dropout(0.5))
+
+classifier.add(Dense(256))
+classifier.add(Activation('relu'))
+classifier.add(Dropout(0.5))
+
+classifier.add(Dense(num_labels))
+classifier.add(Activation('softmax'))
+
+classifier.compile(loss='binary_crossentropy', metrics=['accuracy'], optimizer='adam')
+#Building process finishes
+
+
+#Part 2. Defining data 
+#you define where the training set comes from
+#bununla
+training_set = train_datagen.flow_from_directory('dataset/training_set',
+                                                 target_size = (64, 64),
+                                                 batch_size = 32,
+                                                 class_mode = 'binary')
+
+#you define where the test set comes from
+test_set = test_datagen.flow_from_directory('dataset/test_set',
+                                            target_size = (64, 64),
+                                            batch_size = 32,
+                                            class_mode = 'binary')
+
+vs
+model.fit(X, y, batch_size=32, epochs=5, validation_data=(val_x, val_y))#bunu karşılaştır
+
+
+#Train model with training set
+classifier.fit_generator(training_set,
+                         samples_per_epoch = 8000,
+                         nb_epoch = 5,
+                         validation_data = test_set,
+                         nb_val_samples = 2000)
+
