@@ -4,23 +4,26 @@ Created on Sun Aug 12 17:16:44 2018
 
 @author: Ahmet
 """
-
-
 import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import spotipy.util as util
 import requests
+import numpy as np
+
 
 import pandas as pd
 import IPython.display as ipd
 import librosa
 import librosa.display
+
 import glob 
 import matplotlib.pyplot as plt
+import random
+
 
 #1. Authentication Part
-cid =input("Please enter your client id here: ")
+cid = input("Please enter your client id here: ")
 secret = input("Please enter your secret here: ")
 username = input("Please enter your username here: ")
 client_credentials_manager = SpotifyClientCredentials(client_id=cid, client_secret=secret) 
@@ -55,7 +58,7 @@ def download_file(url,filename):
                 #f.flush() commented by recommendation from J.F.Sebastian
     return local_filename
 
-
+mfccs=[]
 #Getting the previews for the songs liked
 os.chdir('C:\\Users\\Ahmet\\Desktop\\machine learning\\Convolutional_Neural_Networks\\audio_dataset\\liked2')
 songNum=0
@@ -72,8 +75,13 @@ for v_offset in range(0,v_length+20,20):
             #SavedSongURLs.append(song['track']['preview_url'])
             #download_file(song['track']['preview_url'],'song'+(str(songNum)))
             audio_data.append(librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked2/song'+str(songNum)+'.wav'))
+            mfccs.append(np.mean(librosa.feature.mfcc(y=audio_data[songNum-1][0], sr=audio_data[songNum-1][1], n_mfcc=40).T,axis=0))
+            
+
+np.save('mfccs_array',mfccs)
 
 
+songNum=186        
 #Getting the songs and their features from my DislikedSongs playlist
 #Not much different than the upper
 myDislikePl= sp.user_playlist(user=username, playlist_id='0ij13jfgJQg3rvyA6T19hP?')
@@ -81,30 +89,35 @@ myDislikePl= sp.user_playlist(user=username, playlist_id='0ij13jfgJQg3rvyA6T19hP
 os.chdir('C:\\Users\\Ahmet\\Desktop\\machine learning\\Convolutional_Neural_Networks\\audio_dataset\\disliked2')
 DislikedSongsURLs=[]
 v_length2=myDislikePl["tracks"]["total"]
+
 for v_dlTrack in myDislikePl["tracks"]["items"]:
-    print(v_dlTrack["track"]["preview_url"])
+    print(songNum)
     if v_dlTrack['track']['preview_url'] is None:
             None
     else:
             songNum=songNum+1
             #DislikedSongsURLs.append(v_dlTrack["track"]["preview_url"])
             #download_file(v_dlTrack['track']['preview_url'],'song'+(str(songNum)))
-            audio_data.append(librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/disliked2/song'+str(songNum)+'.wav'))
-
-
-
-
- = librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked2/song'+str(songNum)+'.wav')
+            #audio_data.append(librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/disliked2/song'+str(songNum)+'.wav'))
+            mfccs.append(np.mean(librosa.feature.mfcc(y=audio_data[songNum-1][0], sr=audio_data[songNum-1][1], n_mfcc=40).T,axis=0))
       
 #librosa audio object
 ipd.Audio('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/24HoursIstanbul.wav')
 
-#getting the spectogram out of librosa audio file 
-data, sampling_rate = librosa.load('C:\\Users/Ahmet/Desktop/machine learning/Convolutional_Neural_Networks/audio_dataset/liked/24HoursIstanbul.wav')
+np.save('mfccs_array',mfccs)
+np.savetxt("mfccs_array.csv", mfccs, delimiter=" ")
 
-#drawing the spectogram
-plt.figure(figsize=(20, 4))
-librosa.display.waveplot(data, sr=sampling_rate)
+data_dir='C:\\Users\\Ahmet\\Desktop\\machine learning\\Convolutional_Neural_Networks\\audio_dataset\\liked2'
+
+#########buralarda başladı
+
+X = pd.DataFrame(data=mfccs)
+Y=np.ones(184) #sevdiklerim
+Y=np.append(np.ones(184),np.zeros(30)) #sevmediklerim
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
 
 # Part 1 - Building the CNN
 
@@ -116,51 +129,38 @@ from keras.layers import Flatten
 from keras.layers import Dense
 from keras.layers import Activation
 from keras.layers import Dropout
+from keras.utils import np_utils
 
-import numpy as np
 
-mfccs = np.mean(librosa.feature.mfcc(y=audio_data[0][0], sr=audio_data[0][1], n_mfcc=40).T,axis=0)
+
 
 #Building process
-classifier = Sequential()
+clf = Sequential()
 
-classifier.add(Dense(256, input_shape=(40,)))
-classifier.add(Activation('relu'))
-classifier.add(Dropout(0.5))
+clf.add(Dense(256, input_shape=(40,)))
+clf.add(Activation('relu'))
+clf.add(Dropout(0.5))
 
-classifier.add(Dense(256))
-classifier.add(Activation('relu'))
-classifier.add(Dropout(0.5))
+clf.add(Dense(256))
+clf.add(Activation('relu'))
+clf.add(Dropout(0.5))
 
-classifier.add(Dense(num_labels))
-classifier.add(Activation('softmax'))
+clf.add(Dense(1))
+clf.add(Activation('softmax'))
 
-classifier.compile(loss='binary_crossentropy', metrics=['accuracy'], optimizer='adam')
+clf.compile(loss='binary_crossentropy', metrics=['accuracy'], optimizer='adam')
 #Building process finishes
 
 
-#Part 2. Defining data 
-#you define where the training set comes from
-#bununla
-training_set = train_datagen.flow_from_directory('dataset/training_set',
-                                                 target_size = (64, 64),
-                                                 batch_size = 32,
-                                                 class_mode = 'binary')
+clf.fit(X_train, y_train, epochs=25, validation_data=(X_test, y_test))#bunu karşılaştır
 
-#you define where the test set comes from
-test_set = test_datagen.flow_from_directory('dataset/test_set',
-                                            target_size = (64, 64),
-                                            batch_size = 32,
-                                            class_mode = 'binary')
+y_pred=clf.predict(X_train)
 
-vs
-model.fit(X, y, batch_size=32, epochs=5, validation_data=(val_x, val_y))#bunu karşılaştır
+from sklearn.metrics import confusion_matrix
+
+cm=confusion_matrix(y_train,y_pred)
+score = clf.evaluate(X_test, y_test)
 
 
-#Train model with training set
-classifier.fit_generator(training_set,
-                         samples_per_epoch = 8000,
-                         nb_epoch = 5,
-                         validation_data = test_set,
-                         nb_val_samples = 2000)
-
+Y_pred = clf.predict_generator(aaa,validation_data=(X_test, y_test))
+y_pred = np.argmax(Y_pred, axis=1)
